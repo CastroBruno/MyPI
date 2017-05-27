@@ -28,9 +28,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
+import android.content.Intent;
 import org.postgresql.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.*;
@@ -45,6 +44,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * Id to identity READ_CONTACTS permission request.
      */
+    public static int FKey;
+    public void Newpage()
+    {
+        Intent i = new Intent(LoginActivity.this, GraficoActivity.class);
+        startActivity(i);
+    }
     private static final int REQUEST_READ_CONTACTS = 0;
 
     /**
@@ -324,23 +329,31 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 for (String credential : DUMMY_CREDENTIALS) {
                     String[] pieces = credential.split(":");
                 }
-
                 try {
-                    Connection db = DriverManager.getConnection("Server=ec2-184-73-199-72.compute-1.amazonaws.com","ipsjzpheswtzlh","Password=a5f4879460047281d282829f6e0b6fa4f0771722744aafaf627a4da8279127a8");
+                    Class.forName("org.postgresql.Driver");
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Connection db = null;
+                try {
+                    db = DriverManager.getConnection("jdbc:postgresql://ec2-184-73-199-72.compute-1.amazonaws.com:5432/d9krqs4b40hebl?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory","ipsjzpheswtzlh","a5f4879460047281d282829f6e0b6fa4f0771722744aafaf627a4da8279127a8");
                     Statement st = db.createStatement();
                     ResultSet lg = st.executeQuery("SELECT login FROM tbusuario");
+                    ResultSet pass = st.executeQuery("SELECT senha FROM tbusuario");
                     while (lg.next()) {
-                        if (lg.getString(1).equals("Caio"))
+                        if (lg.getString(1).equals(mEmail))
                         {
-                            ResultSet pass = st.executeQuery("SELECT password FROM tbusuario");
-                            if(pass.getString(1).equals("1234"))
+                            if(pass.getString(1).equals(mPassword))
                             {
+                                ResultSet fk = st.executeQuery("SELECT id FROM tbusuario");
+                                FKey = fk.getInt(1);
                                 return true;
                             }
                         }
                     }
                     lg.close();
                     st.close();
+                    pass.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -359,7 +372,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                mPasswordView.setError("Tudo Certo");
+                Newpage();
                 //finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -372,6 +385,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
         }
+
+
     }
 
 }
