@@ -52,18 +52,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-
-
     private UserLoginTask mAuthTask = null;
 
     // UI references.
@@ -307,8 +295,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
-        private final String mPassword;
+        public final String mEmail;
+        public final String mPassword;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -325,51 +313,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             try {
                 // Simulate network access.
-                Thread.sleep(2000);
-                for (String credential : DUMMY_CREDENTIALS) {
-                    String[] pieces = credential.split(":");
-                }
-                try {
-                    Class.forName("org.postgresql.Driver");
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
+                Thread.sleep(1000);
                 Connection db = null;
                 try {
-                    db = DriverManager.getConnection("jdbc:postgresql://ec2-184-73-199-72.compute-1.amazonaws.com:5432/d9krqs4b40hebl?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory","ipsjzpheswtzlh","a5f4879460047281d282829f6e0b6fa4f0771722744aafaf627a4da8279127a8");
+                    Class.forName("org.postgresql.Driver");
+                    db = DriverManager.getConnection("jdbc:postgresql://ec2-184-73-199-72.compute-1.amazonaws.com:5432/d9krqs4b40hebl?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory", "ipsjzpheswtzlh", "a5f4879460047281d282829f6e0b6fa4f0771722744aafaf627a4da8279127a8");
                     Statement st = db.createStatement();
-                    ResultSet lg = st.executeQuery("SELECT login FROM tbusuario");
-                    ResultSet pass = st.executeQuery("SELECT senha FROM tbusuario");
-                    while (lg.next()) {
-                        if (lg.getString(1).equals(mEmail) && pass.getString(1).equals(mPassword))
+                    ResultSet lg = st.executeQuery("SELECT login,senha,id FROM tbusuario");
+                    while (lg.next()){
+                        String login = lg.getString("login");
+                        String senha = lg.getString("senha");
+                        int id = lg.getInt("id");
+                        if (mEmail.equals(login) && mPassword.equals(senha))
                         {
-                                ResultSet fk = st.executeQuery("SELECT id FROM tbusuario");
-                                FKey = fk.getInt(1);
-                                return true;
+                                FKey = id;
                         }
                     }
-                    lg.close();
-                    st.close();
-                    pass.close();
-                } catch (SQLException e) {
+                    db.close();
+                }catch (SQLException e) {
                     e.printStackTrace();
-                    //return false;
+                    return false;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    return false;
                 }
             } catch (InterruptedException e) {
                 return false;
             }
-
-
             // TODO: register the new account here.
             return true;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Boolean success){
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
+            if (success){
                 Newpage();
                 //finish();
             } else {
