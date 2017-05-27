@@ -341,14 +341,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     ResultSet lg = st.executeQuery("SELECT login FROM tbusuario");
                     ResultSet pass = st.executeQuery("SELECT senha FROM tbusuario");
                     while (lg.next()) {
-                        if (lg.getString(1).equals(mEmail))
+                        if (lg.getString(1).equals(mEmail) && pass.getString(1).equals(mPassword))
                         {
-                            if(pass.getString(1).equals(mPassword))
-                            {
                                 ResultSet fk = st.executeQuery("SELECT id FROM tbusuario");
                                 FKey = fk.getInt(1);
                                 return true;
-                            }
                         }
                     }
                     lg.close();
@@ -356,6 +353,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     pass.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    //return false;
                 }
             } catch (InterruptedException e) {
                 return false;
