@@ -49,24 +49,18 @@ public class GraficoActivity extends AppCompatActivity {
                 Date[] datar = new Date[30];
                 Time[] horar = new Time[30];
                 while (lg2.next()) {
-                    for (int j = 0; j < 30; j++) {
-                        idd[j] = lg2.getInt("idd");
-                    }
-                    for (int k = 0; k < 30; k++) {
-                        datar[k] = lg2.getDate("datar");
-                    }
-                    for (int l = 0; l < 30; l++) {
-                        horar[l] = lg2.getTime("horar");
-                    }
                     for (int i = 0; i < 30; i++) {
+                        idd[i] = lg2.getInt("idd");
                         dados[i] = lg2.getArray("dados");
+                        horar[i] = lg2.getTime("horar");
+                        datar[i] = lg2.getDate("datar");
                     }
                 }
                 BigDecimal[] dadosI = new BigDecimal[30];
                 for (int i = 0; i <30 ; i++) {
-                    dadosI[i] = (BigDecimal)dados[i].getArray();
+                    Object n = dados[i].getArray();
+                    dadosI[i] = new BigDecimal(n.toString());
                 }
-
                 for (int i = 0; i < 30 ; i++) {
                     y.add(new Entry(i,dadosI[i].intValueExact()));
                 }
@@ -98,14 +92,11 @@ public class GraficoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_grafico);
         lineChart = (LineChart) findViewById(R.id.lineChart);
-        // ArrayList<Entry> x = new ArrayList<>();
-        //ArrayList<Entry> y = new ArrayList<>();
         new LongOperation().execute("");
         ArrayList<Entry> t = new ArrayList<>();
         for (int i = 1; i < 12; i++) {
             t.add(new Entry(i, i));
         }
-
         LineDataSet Tdataset = new LineDataSet(t, "Potencia");
         //lineChart.setData(new LineData(Ydataset));
     }
