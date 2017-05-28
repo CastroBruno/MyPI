@@ -1,5 +1,7 @@
 package br.com.gg.mypi;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
@@ -9,12 +11,15 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 
 public class GraficoActivity extends AppCompatActivity {
@@ -36,18 +41,35 @@ public class GraficoActivity extends AppCompatActivity {
                 Class.forName("org.postgresql.Driver");
                 db2 = DriverManager.getConnection("jdbc:postgresql://ec2-184-73-199-72.compute-1.amazonaws.com:5432/d9krqs4b40hebl?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory", "ipsjzpheswtzlh", "a5f4879460047281d282829f6e0b6fa4f0771722744aafaf627a4da8279127a8");
                 st2 = db2.createStatement();
-                lg2 = st2.executeQuery("SELECT idd,dados,id_fk FROM tbdados Where id_fk ="+foreignKey);
+                lg2 = st2.executeQuery("SELECT idd,dados,id_fk,datar,horar FROM tbdados Where id_fk ="+foreignKey);
 
-                int i = 0;
                 y = new ArrayList<>();
+                Array[] dados = new Array[30];
+                int[] idd = new int[30];
+                Date[] datar = new Date[30];
+                Time[] horar = new Time[30];
                 while (lg2.next()) {
-                        int idd = lg2.getInt("idd");
-                        Array dados = (lg2.getArray("dados"));
-                        int idfk2 = lg2.getInt("id_fk");
-                        y.add(new Entry (i,idd));
-                        i++;
+                    for (int j = 0; j < 30; j++) {
+                        idd[j] = lg2.getInt("idd");
+                    }
+                    for (int k = 0; k < 30; k++) {
+                        datar[k] = lg2.getDate("datar");
+                    }
+                    for (int l = 0; l < 30; l++) {
+                        horar[l] = lg2.getTime("horar");
+                    }
+                    for (int i = 0; i < 30; i++) {
+                        dados[i] = lg2.getArray("dados");
+                    }
+                }
+                BigDecimal[] dadosI = new BigDecimal[30];
+                for (int i = 0; i <30 ; i++) {
+                    dadosI[i] = (BigDecimal)dados[i].getArray();
                 }
 
+                for (int i = 0; i < 30 ; i++) {
+                    y.add(new Entry(i,dadosI[i].intValueExact()));
+                }
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -64,36 +86,27 @@ public class GraficoActivity extends AppCompatActivity {
             }
             return y;
         }
-    }
+        protected void onPostExecute(final ArrayList<Entry> y){
+                LineDataSet Ydataset = new LineDataSet(y,"Potencia");
+                lineChart.setData(new LineData(Ydataset));
+                //finish();
+            }
+        }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_grafico);
-        lineChart = (LineChart)findViewById(R.id.lineChart);
-
-        ArrayList<Entry> x = new ArrayList<>();
-        ArrayList<Entry> y = new ArrayList<>();
+        lineChart = (LineChart) findViewById(R.id.lineChart);
+        // ArrayList<Entry> x = new ArrayList<>();
+        //ArrayList<Entry> y = new ArrayList<>();
         new LongOperation().execute("");
         ArrayList<Entry> t = new ArrayList<>();
-        for (int i = 1; i < 12 ; i++) {
-            t.add(new Entry (i,i));
+        for (int i = 1; i < 12; i++) {
+            t.add(new Entry(i, i));
         }
 
-        LineDataSet Tdataset = new LineDataSet(t,"Potencia");
-        LineDataSet Ydataset = new LineDataSet(y,"Potencia");
-
-        Ydataset.setDrawCircles(false);
-        Ydataset.setDrawValues(false);
-        Ydataset.setFillAlpha(65);
-        Ydataset.setDrawCircleHole(false);
-        //lineChart.clear();
-        Ydataset.setDrawValues(false);
-        lineChart.setData(new LineData(Tdataset));
-        if(lineChart.isEmpty())
-        {
-            finish();
-        }
+        LineDataSet Tdataset = new LineDataSet(t, "Potencia");
+        //lineChart.setData(new LineData(Ydataset));
     }
-
 }
